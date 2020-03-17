@@ -1,5 +1,5 @@
 # akka-rabbitmq
-Lecture d'un document tsv et publication de son contenu dans un message broker RabbitMQ
+Utilisation de la bibliothèque akka-stream pour lire un document .tsv et publication de son contenu dans un message broker RabbitMQ
 
 
 ## Configuration de rabbitmq

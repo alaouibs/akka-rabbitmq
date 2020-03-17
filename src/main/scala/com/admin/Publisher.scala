@@ -18,6 +18,8 @@ import scala.concurrent.duration.Duration
 object Publisher extends App {
   implicit val actorSystem = ActorSystem()
   implicit val actorMaterializer = ActorMaterializer()
+
+  // Connection to RabbitMQ
   val queueName = "myqueue"
   val queueDeclaration = QueueDeclaration(queueName, durable = true)
   val uri = "amqp://admin:admin@localhost:5672/myvhost"
@@ -27,17 +29,16 @@ object Publisher extends App {
     .withDeclarations(queueDeclaration)
   val amqpSink = AmqpSink.simple(settings)
 
-  val flightDelayLines: Iterator[String] = io.Source.fromFile("src/main/resources/title.basics.tsv", "utf-8").getLines()
-  // immutable flow step to split apart our csv into a string array and transform each array into a FlightEvent
+  val titleLines: Iterator[String] = io.Source.fromFile("src/main/resources/title.basics.tsv", "utf-8").getLines()
+  // immutable flow step to split apart our csv into a string array
 
-  val csvToFlightEvent = flightDelayLines.map(_.split("/t").map(_.trim)) // we convert an array of columns to a FlightEvent
   val csvHandler = Flow[String].drop(1)
-    .map(_.split("\t").toList)
+    .map(_.split("\t").toList) // We split the string to retrieve a list of string
 
-  val flow1 = Flow[List[String]].filter(list => list(1) == "movie")
-  val flow2 = Flow[List[String]].filter(list => list.last.contains("Comedy"))
+  val flow1 = Flow[List[String]].filter(list => list(1) == "movie") // Only titles that are movies are kept
+  val flow2 = Flow[List[String]].filter(list => list.last.contains("Comedy")) // Only titles that are comedy movies are kept
   val flow3 = Flow[List[String]].map(list => list.mkString("\t"))
-  val flow4 = Flow[String].map(list => ByteString(list))
+  val flow4 = Flow[String].map(list => ByteString(list)) // We prepare the string to be sent in a broker message
 
   // @formatter:off
   val g = RunnableGraph.fromGraph(GraphDSL.create(amqpSink) {
@@ -46,7 +47,7 @@ object Publisher extends App {
         import GraphDSL.Implicits._
 
         // Source
-        val A: Outlet[String] = builder.add(Source.fromIterator(() => flightDelayLines)).out
+        val A: Outlet[String] = builder.add(Source.fromIterator(() => titleLines)).out
 
         val B: FlowShape[String, List[String]] = builder.add(csvHandler)
         val C: FlowShape[List[String], List[String]] = builder.add(flow1)

@@ -14,13 +14,15 @@ object Consumer extends App {
   implicit val actorSystem = ActorSystem()
   implicit val actorMaterializer = ActorMaterializer()
 
+  //in order to read the data we just wrote into our queue. we need to build a Akka Streams source for RabbitMQ.
   val queueName = "queue"
   val queueDeclaration = QueueDeclaration(queueName, durable = true)
   val uri = "amqp://admin:admin@localhost:5672/myvhost"
   val amqpUri = AmqpConnectionUri(uri)
   val namedQueueSourceSettings = NamedQueueSourceSettings(amqpUri, queueName).withDeclarations(queueDeclaration)
-
   val source = AmqpSource.atMostOnceSource(namedQueueSourceSettings, bufferSize = 10)
+
+
   val flow1 = Flow[IncomingMessage].map(msg => msg.bytes)
   val flow2 = Flow[ByteString].map(_.utf8String)
   val sink = Sink.foreach[String](println)
