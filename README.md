@@ -32,3 +32,5 @@ Les données sont à placer dans `src/main/resources/title.basics.tsv` et peuven
 
 L'objet Publisher permet de lire les données d'un fichier .tsv et les envoyer dans un message broker 
 L'objet Consumer consomme les messages RabbitMQ
+
+Une fois les données publiées dans le message broker, on peut vérifier qu'elles ont été bien reçues dans : http://localhost:15672/ (Username : admin, Password : admin)
