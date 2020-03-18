@@ -28,3 +28,7 @@ rabbitmqadmin declare binding --vhost=myvhost source=exchange destination=queue 
 ## Téléchargement des données
 Les données sont à placer dans `src/main/resources/title.basics.tsv` et peuvent être téléchargées sur : https://datasets.imdbws.com/title.basics.tsv.gz
 
+## Consumer/Publisher
+
+L'objet Publisher permet de lire les données d'un fichier .tsv et les envoyer dans un message broker 
+L'objet Consumer consomme les messages RabbitMQ
